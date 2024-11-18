@@ -488,6 +488,9 @@ def transcribe(
                     if callback_segment:
                         callback_segment(segment)
                         
+                if callback_segment:
+                    callback_segment(None)
+
             # if a segment is instantaneous or does not contain text, clear it
             for i, segment in enumerate(current_segments):
                 if segment["start"] == segment["end"] or segment["text"].strip() == "":
@@ -513,9 +516,6 @@ def transcribe(
 
             # update progress bar
             pbar.update(min(content_frames, seek) - previous_seek)
-
-    if callback_segment:
-        callback_segment(None)
 
     return dict(
         text=tokenizer.decode(all_tokens[len(initial_prompt_tokens) :]),
