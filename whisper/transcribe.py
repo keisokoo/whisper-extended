@@ -358,14 +358,15 @@ def transcribe(
                     end_timestamp_pos = (
                         sliced_tokens[-1].item() - tokenizer.timestamp_begin
                     )
-                    current_segments.append(
-                        new_segment(
-                            start=time_offset + start_timestamp_pos * time_precision,
-                            end=time_offset + end_timestamp_pos * time_precision,
-                            tokens=sliced_tokens,
-                            result=result,
-                        )
+                    parsed_segment = new_segment(
+                        start=time_offset + start_timestamp_pos * time_precision,
+                        end=time_offset + end_timestamp_pos * time_precision,
+                        tokens=sliced_tokens,
+                        result=result,
                     )
+                    if callback_segment:
+                        callback_segment(parsed_segment)
+                    current_segments.append(parsed_segment)
                     last_slice = current_slice
 
                 if single_timestamp_ending:
@@ -390,14 +391,15 @@ def transcribe(
                     )
                     duration = last_timestamp_pos * time_precision
 
-                current_segments.append(
-                    new_segment(
-                        start=time_offset,
-                        end=time_offset + duration,
-                        tokens=tokens,
-                        result=result,
-                    )
+                parsed_segment = new_segment(
+                    start=time_offset + start_timestamp_pos * time_precision,
+                    end=time_offset + end_timestamp_pos * time_precision,
+                    tokens=sliced_tokens,
+                    result=result,
                 )
+                if callback_segment:
+                    callback_segment(parsed_segment)
+                current_segments.append(parsed_segment)
                 seek += segment_size
 
             if word_timestamps:
@@ -477,16 +479,11 @@ def transcribe(
                 if last_word_end is not None:
                     last_speech_timestamp = last_word_end
 
-            if verbose or callback_segment:
+            if verbose:
                 for segment in current_segments:
                     start, end, text = segment["start"], segment["end"], segment["text"]
-                    
-                    if verbose:
-                        line = f"[{format_timestamp(start)} --> {format_timestamp(end)}] {text}"
-                        print(make_safe(line))
-                    
-                    if callback_segment:
-                        callback_segment(segment)
+                    line = f"[{format_timestamp(start)} --> {format_timestamp(end)}] {text}"
+                    print(make_safe(line))
                         
             # if a segment is instantaneous or does not contain text, clear it
             for i, segment in enumerate(current_segments):
@@ -513,9 +510,6 @@ def transcribe(
 
             # update progress bar
             pbar.update(min(content_frames, seek) - previous_seek)
-            
-    if callback_segment:
-        callback_segment(None)
 
     return dict(
         text=tokenizer.decode(all_tokens[len(initial_prompt_tokens) :]),
