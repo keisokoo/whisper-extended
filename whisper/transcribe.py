@@ -481,9 +481,9 @@ def transcribe(
                     if callback_segment:
                         callback_segment(segment)
                     if verbose:
-                    line = f"[{format_timestamp(start)} --> {format_timestamp(end)}] {text}"
-                    print(make_safe(line))
-                        
+                        line = f"[{format_timestamp(start)} --> {format_timestamp(end)}] {text}"
+                        print(make_safe(line))
+
             # if a segment is instantaneous or does not contain text, clear it
             for i, segment in enumerate(current_segments):
                 if segment["start"] == segment["end"] or segment["text"].strip() == "":
