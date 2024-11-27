@@ -390,11 +390,11 @@ def transcribe(
                     duration = last_timestamp_pos * time_precision
 
                 parsed_segment = new_segment(
-                    start=time_offset + start_timestamp_pos * time_precision,
-                    end=time_offset + end_timestamp_pos * time_precision,
-                    tokens=sliced_tokens,
-                    result=result,
-                )
+                        start=time_offset,
+                        end=time_offset + duration,
+                        tokens=tokens,
+                        result=result,
+                    )
                 current_segments.append(parsed_segment)
                 seek += segment_size
 
